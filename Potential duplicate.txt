@@ -1,0 +1,586 @@
+Sub potential_Duplicate()
+
+Dim lastrow As Long
+Dim lastrowconsolidate As Long
+Dim lrpotential As Long
+Dim lr As Long
+Dim xlName As Variant
+
+With Application
+    .DisplayAlerts = False
+    .ScreenUpdating = False
+    .StatusBar = "wait..."
+End With
+
+Sheets("duplicates in same file").Visible = True
+Sheets("Data").Visible = True
+Sheets("Potential duplicates").Visible = True
+
+'Workbooks.Open "\\CHSFS\CHSCapGemini\India\Accounts Payable Team\01. Command Center\03. Daily plan\Accounts Payable\BPOpen\Italy\To be done\Audit TA 2019\Duplicate report\Consolidated report.xlsx"
+
+Workbooks("Consolidated report.xlsx").Activate
+If ActiveSheet.AutoFilterMode Then ActiveSheet.AutoFilterMode = False
+Range("L:R").Select
+Selection.Clear
+
+Range("L1") = "empty"
+Range("M1") = "vendor name, invoice num"
+Range("N1") = "VENDOR NAME,INVOICE AMT,TRANS CURRENCY"
+Range("O1") = "INVOICE NUMBER,Amt"
+Range("P1") = "lookup1"
+Range("Q1") = "lookup2"
+Range("R1") = "lookup3"
+
+lastrow = Range("A" & Rows.Count).End(xlUp).Row
+
+
+Range("M2:M" & lastrow).Formula = "=CONCATENATE(B2,D2)"
+Range("N2:N" & lastrow).Formula = "=CONCATENATE(B2,G2,I2)"
+Range("O2:O" & lastrow).Formula = "=CONCATENATE(D2,G2)"
+
+Range("M:O").Copy
+Range("M:O").PasteSpecial xlPasteValuesAndNumberFormats
+
+
+Workbooks("Open item template.xlsm").Activate
+
+Sheets("SAEXPAP12_20190916133836").Select
+
+If ActiveSheet.AutoFilterMode Then ActiveSheet.AutoFilterMode = False
+
+Range("L:T").Select
+Selection.Clear
+
+Range("L1") = "Voucher lookup"
+Range("M1") = "Concatenate"
+Range("N1") = "Concatenate lookup"
+Range("O1") = "Vendor name,Invoice num"
+Range("P1") = "Vendor name,Amt,Date"
+Range("Q1") = "invoice num, AMt"
+Range("R1") = "lookup1"
+Range("S1") = "lookup2"
+Range("T1") = "lookup3"
+
+lastrow = Cells(Rows.Count, "A").End(xlUp).Row
+
+Range("O2:O" & lastrow).Formula = "=CONCATENATE(B2,D2)"
+Range("P2:P" & lastrow).Formula = "=CONCATENATE(B2,G2,I2)"
+Range("Q2:Q" & lastrow).Formula = "=CONCATENATE(D2,G2)"
+Application.Calculation = xlCalculationManual
+
+Range("L2").Formula = "=VLOOKUP($C2,'[Consolidated report.xlsx]SAEXPAP12_20190903130306'!$C:$C,1,0)"
+Range("R2").Formula = "=VLOOKUP($O2,'[Consolidated report.xlsx]SAEXPAP12_20190903130306'!$M:$M,1,0)"
+Range("S2").Formula = "=VLOOKUP($P2,'[Consolidated report.xlsx]SAEXPAP12_20190903130306'!$N:$N,1,0)"
+Range("T2").Formula = "=VLOOKUP($Q2,'[Consolidated report.xlsx]SAEXPAP12_20190903130306'!$O:$O,1,0)"
+Range("L" & lastrow).Select
+Range(Selection, Selection.End(xlUp)).Select
+Selection.FillDown
+Range("R" & lastrow, "T" & lastrow).Select
+Range(Selection, Selection.End(xlUp)).Select
+Selection.FillDown
+Application.Calculation = xlCalculationAutomatic
+Calculate
+Range("L2:T" & lastrow).Copy
+Range("L2:T" & lastrow).PasteSpecial xlPasteValuesAndNumberFormats
+'Selection.Value = Selection.Value
+'Workbooks("Open item template.xlsm").Activate
+Sheets("Potential duplicates").Select
+Range("A2:K10000").Select
+Selection.Clear
+'1st criteria
+
+Sheets("SAEXPAP12_20190916133836").Select
+Range("A1").Select
+
+Selection.AutoFilter
+
+ActiveSheet.Range("A:T").AutoFilter Field:=20, Criteria1:="<>#N/A"
+ActiveSheet.Range("A:T").AutoFilter Field:=12, Criteria1:="#N/A"
+
+lr1 = Range("A" & Rows.Count).End(xlUp).Row
+If lr1 <= 1 Then
+'ActiveSheet.AutoFilterMode = False
+Else
+Sheets("SAEXPAP12_20190916133836").Select
+Range("A2", "K" & lastrow).Select
+Selection.SpecialCells(xlCellTypeVisible).Select
+Application.CutCopyMode = False
+    Selection.Copy
+
+   Sheets("Potential duplicates").Select
+
+Range("A2").Select
+
+Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+Selection.PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
+        SkipBlanks:=False, Transpose:=False
+
+Selection.Columns.AutoFit
+
+End If
+
+'2nd criteria
+
+Sheets("SAEXPAP12_20190916133836").Select
+
+Selection.AutoFilter
+ActiveSheet.Range("A:T").AutoFilter Field:=19, Criteria1:="<>#N/A"
+ActiveSheet.Range("A:T").AutoFilter Field:=12, Criteria1:="#N/A"
+
+lr2 = Range("A" & Rows.Count).End(xlUp).Row
+If lr2 <= 1 Then
+'ActiveSheet.AutoFilterMode = False
+Else
+
+Range("A2", "K" & lastrow).Select
+
+    Selection.SpecialCells(xlCellTypeVisible).Select
+   
+    Application.CutCopyMode = False
+    Selection.Copy
+
+   Sheets("Potential duplicates").Select
+   
+
+
+Range("A" & Rows.Count).End(xlUp).Offset(1, 0).Select
+
+Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+Selection.PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
+        SkipBlanks:=False, Transpose:=False
+
+End If
+
+'3rd criteria
+
+Sheets("SAEXPAP12_20190916133836").Select
+
+Range("A:T").Select
+Selection.AutoFilter
+ActiveSheet.Range("A:T").AutoFilter Field:=18, Criteria1:="<>#N/A"
+ActiveSheet.Range("A:T").AutoFilter Field:=12, Criteria1:="#N/A"
+lr3 = Range("A" & Rows.Count).End(xlUp).Row
+If lr3 <= 1 Then
+
+Else
+
+Range("A2", "K" & lastrow).Select
+
+    Selection.SpecialCells(xlCellTypeVisible).Select
+    
+    Application.CutCopyMode = False
+    Selection.Copy
+   Sheets("Potential duplicates").Select
+
+Range("A" & Rows.Count).End(xlUp).Offset(1, 0).Select
+
+Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+Selection.PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
+        SkipBlanks:=False, Transpose:=False
+
+Range("B1").Select
+Selection.CurrentRegion
+Selection.Columns.AutoFit
+End If
+
+
+If lr1 <= 1 And lr2 <= 1 And lr3 <= 1 Then
+MsgBox "Duplicates Not Found in Potential"
+Sheets("SAEXPAP12_20190916133836").Select
+Selection.AutoFilter
+Range("L:T").ClearContents
+Workbooks("Consolidated report.xlsx").Activate
+Range("L:R").ClearContents
+
+Exit Sub
+Else
+
+'lookup with consolidated
+Sheets("Potential duplicates").Activate
+
+
+  If ActiveSheet.AutoFilterMode Then ActiveSheet.AutoFilterMode = False
+
+Range("L2:N1000").ClearContents
+lastrow = Range("A" & Rows.Count).End(xlUp).Row
+
+
+Range("L2:L" & lastrow).Formula = "=CONCATENATE(B2,D2)"
+Range("M2:M" & lastrow).Formula = "=CONCATENATE(B2,G2,I2)"
+Range("N2:N" & lastrow).Formula = "=CONCATENATE(D2,G2)"
+
+Range("L:N").Copy
+Range("L:N").PasteSpecial xlPasteValuesAndNumberFormats
+Application.CutCopyMode = False
+
+Range("L2:N" & lastrow).Select
+Selection.Copy
+
+Dim wbconsolidated As Workbook
+Dim sh As Worksheet
+
+
+Set wbconsolidated = Workbooks("Consolidated report.xlsx")
+Set sh = wbconsolidated.Worksheets("SAEXPAP12_20190903130306")
+
+sh.Activate
+
+Sheets.Add.Name = "lookup"
+Range("A1").Select
+ActiveCell.PasteSpecial xlPasteValuesAndNumberFormats
+
+End If
+
+Sheets("SAEXPAP12_20190903130306").Select
+
+If ActiveSheet.AutoFilterMode Then ActiveSheet.AutoFilterMode = False
+lastrow = Range("A" & Rows.Count).End(xlUp).Row
+
+Range("P2", "R" & lastrow).Select
+Selection.ClearContents
+
+Application.Calculation = xlCalculationManual
+
+Range("P2").Formula = "=VLOOKUP(M2,lookup!$A:$A,1,0)"
+Range("Q2").Formula = "=VLOOKUP(N2,lookup!$B:$B,1,0)"
+Range("R2").Formula = "=VLOOKUP(O2,lookup!$C:$C,1,0)"
+Range("P" & lastrow, "R" & lastrow).Select
+Range(Selection, Selection.End(xlUp)).Select
+Selection.FillDown
+
+Application.Calculation = xlCalculationAutomatic
+Calculate
+Range("P:R").Copy
+Range("P:R").PasteSpecial xlPasteValuesAndNumberFormats
+
+Sheets("lookup").Delete
+
+sh.Activate
+
+If ActiveSheet.AutoFilterMode = False Then
+Range("A1:Z1").Select
+Selection.AutoFilter
+
+End If
+
+ActiveSheet.Range("A:R").AutoFilter Field:=18, Criteria1:="<>#N/A"
+
+
+lr4 = Range("A" & Rows.Count).End(xlUp).Row
+If lr4 <= 1 Then
+sh.AutoFilterMode = False
+Else
+
+
+Range("A2", "K" & lastrow).Select
+
+  
+  Selection.SpecialCells(xlCellTypeVisible).Select
+    
+    Application.CutCopyMode = False
+    Selection.Copy
+    Workbooks("Open item template.xlsm").Sheets("Potential duplicates").Activate
+    Range("A" & Rows.Count).End(xlUp).Offset(1, 0).Select
+    Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+
+    
+
+End If
+
+wbconsolidated.Activate
+Range("A1").Select
+If ActiveSheet.AutoFilterMode = True Then ActiveSheet.AutoFilterMode = False
+
+sh.Range("A:R").AutoFilter Field:=17, Criteria1:="<>#N/A"
+
+lr5 = Range("A" & Rows.Count).End(xlUp).Row
+If lr5 <= 1 Then
+'ActiveSheet.AutoFilterMode = False
+Else
+
+Range("A2", "K" & lastrow).Select
+  Selection.SpecialCells(xlCellTypeVisible).Select
+  
+    Application.CutCopyMode = False
+    Selection.Copy
+    Workbooks("Open item template.xlsm").Sheets("Potential duplicates").Activate
+    Range("A" & Rows.Count).End(xlUp).Offset(1, 0).Select
+    Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+
+End If
+
+
+
+Workbooks("Consolidated report.xlsx").Activate
+Range("A1").Select
+
+Selection.AutoFilter
+
+ActiveSheet.Range("A:R").AutoFilter Field:=16, Criteria1:="<>#N/A"
+
+lr6 = Range("A" & Rows.Count).End(xlUp).Row
+If lr6 <= 1 Then
+'ActiveSheet.AutoFilterMode = False
+Else
+
+
+Range("A2", "K" & lastrow).Select
+
+
+  Selection.SpecialCells(xlCellTypeVisible).Select
+    
+    Application.CutCopyMode = False
+    Selection.Copy
+    Workbooks("Open item template.xlsm").Sheets("Potential duplicates").Activate
+    Range("A" & Rows.Count).End(xlUp).Offset(1, 0).Select
+    Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+End If
+
+If ActiveSheet.AutoFilterMode = True Then ActiveSheet.AutoFilterMode = False
+
+If lr4 <= 1 And lr5 <= 1 And lr6 <= 1 Then
+    Workbooks("Open item template.xlsm").Activate
+    Sheets("SAEXPAP12_20190916133836").Select
+    If ActiveSheet.AutoFilterMode = True Then ActiveSheet.AutoFilterMode = False
+    Range("L:W").ClearContents
+    sh.Activate
+    Selection.AutoFilter
+    Range("L:R").ClearContents
+     
+xlName = Application.GetOpenFilename()
+If xlName <> False Then
+      Workbooks.Open Filename:=xlName
+End If
+ 
+ Sheets("Potential").Select
+ lrpotential = Range("E" & Rows.Count).End(xlUp).Row + 1
+ Range("E2", "E" & lrpotential).Select
+ Selection.EntireRow.Select
+ Selection.Clear
+MsgBox "No duplicates found in Potential"
+Exit Sub
+Else
+
+Workbooks("Open item template.xlsm").Activate
+Sheets("Potential duplicates").Select
+Range("A:N").Select
+
+If ActiveSheet.AutoFilterMode = False Then
+Range("A:Z").Select
+
+Selection.AutoFilter
+
+ActiveSheet.Range("A:N").RemoveDuplicates Columns:=3, Header:=xlYes
+ 
+    Range("A1").Select
+    
+End If
+    
+lastrow = Cells(Rows.Count, "A").End(xlUp).Row
+
+Range("L2:L" & lastrow).Formula = "=CONCATENATE(B2,D2)"
+Range("M2:M" & lastrow).Formula = "=CONCATENATE(B2,G2,I2)"
+Range("N2:N" & lastrow).Formula = "=CONCATENATE(D2,G2)"
+Range("O2:O" & lastrow).Formula = "=COUNTIFS($L:$L,L2,$M:$M,M2,$N:$N,N2)"
+Range("L:O").Copy
+Range("L:O").PasteSpecial xlPasteValuesAndNumberFormats
+Dim i As Integer
+For i = 2 To lastrow
+
+ If Range("O" & i).Value > 1 Then
+ 
+ 
+ 
+ 
+ End If
+
+
+Next i
+    
+    
+    
+    
+    
+'sort amt and vendor name
+Workbooks("Open item template.xlsm").Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+        Clear
+    ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+        Add Key:=Range("I:I"), SortOn:=xlSortOnValues, Order:=xlDescending, _
+        DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+'    Workbooks("Open item template.xlsm").Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+'        Clear
+    ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+        Add Key:=Range("G:G"), SortOn:=xlSortOnValues, Order:=xlDescending, _
+        DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+    
+       
+    ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+        Clear
+    ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort.SortFields. _
+        Add Key:=Range("B:B"), SortOn:=xlSortOnValues, Order:=xlAscending, _
+        DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Potential duplicates").AutoFilter.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    
+        
+xlName = Application.GetOpenFilename()
+
+If xlName <> False Then
+
+Workbooks.Open Filename:=xlName
+
+End If
+ 
+ 
+ Sheets("Potential").Select
+ lrpotential = Range("E" & Rows.Count).End(xlUp).Row + 1
+ Range("E2", "E" & lrpotential).Select
+ Selection.EntireRow.Select
+ Selection.Clear
+ Workbooks("Open item template.xlsm").Activate
+ Sheets("Potential duplicates").Select
+  
+lr = Range("A" & Rows.Count).End(xlUp).Row
+  
+Range("A2", "K" & lr).Select
+   
+Selection.Copy
+
+Workbooks("Possible Duplicate Cases template.xlsb").Activate
+ Sheets("Potential").Select
+ 
+ Range("E" & Rows.Count).End(xlUp).Offset(1, 0).Select
+ 
+ Selection.PasteSpecial Paste:=xlPasteValuesAndNumberFormats, Operation:= _
+        xlNone, SkipBlanks:=False, Transpose:=False
+
+
+Workbooks("Open item template.xlsm").Sheets("SAEXPAP12_20190916133836").Activate
+If ActiveSheet.AutoFilterMode = True Then ActiveSheet.AutoFilterMode = False
+Workbooks("Consolidated report.xlsx").Activate
+If ActiveSheet.AutoFilterMode = True Then ActiveSheet.AutoFilterMode = False
+Workbooks("Possible Duplicate Cases template.xlsb").Activate
+
+'countif to find duplicate and delete
+
+lastrow = Range("F" & Rows.Count).End(xlUp).Row
+Dim k As Integer
+For k = 2 To lastrow
+
+If WorksheetFunction.CountIf(Range("F:F"), Range("F" & k).Value) > 1 Then
+Range("P" & k).Value = "Duplicate"
+Else
+Range("P" & k).Value = "Not Duplicate"
+
+End If
+Next k
+
+Dim j As Integer
+For j = lastrow To 2 Step -1
+If Range("P" & j).Value = "Not Duplicate" Then
+Range("P" & j).EntireRow.Delete shiftxlUp
+
+End If
+Next j
+
+Range("P2", "P" & lastrow).ClearContents
+
+
+'insert row
+lastrow = Range("G" & Rows.Count).End(xlUp).Row
+If lastrow <= 1 Then
+MsgBox "Duplicates not found"
+Else
+Range("G2").CurrentRegion.Select
+Selection.Columns.AutoFit
+ActiveSheet.AutoFilterMode = False
+
+lr = Range("G" & Rows.Count).End(xlUp).Row
+For i = lr To 2 Step -1
+x = Range("K" & i).Value
+If x < 0 Then
+x = x * -1
+End If
+y = Range("K" & i - 1).Value
+If y < 0 Then
+y = y * -1
+End If
+If (Range("F" & i).Value <> Range("F" & i - 1).Value) Or (x <> y) Or (Range("M" & i).Value <> Range("M" & i - 1).Value) Then
+'MsgBox i
+Range("E" & i).EntireRow.Insert
+
+End If
+Next
+
+'  lr = Range("A" & Rows.Count).End(xlUp).Row
+lrpotential = Range("E" & Rows.Count).End(xlUp).Row + 1
+For i = 2 To lrpotential
+
+Range("E" & i).Select
+If Range("E" & i).Value = "" Then
+
+Range("A" & i, "AB" & i).Interior.Color = RGB(169, 208, 142)
+
+End If
+
+Next i
+
+End If 'lastrow=1 condition
+
+Workbooks("Consolidated report.xlsx").Activate
+
+Range("L:R").ClearContents
+
+ThisWorkbook.Activate
+Sheets("SAEXPAP12_20190916133836").Select
+Range("L:W").ClearContents
+
+Sheets("duplicates in same file").Visible = False
+Sheets("Data").Visible = False
+Sheets("Potential duplicates").Visible = False
+
+'Call duplicateinsamefile
+End If
+
+With Application
+    .DisplayAlerts = True
+    .ScreenUpdating = True
+    .StatusBar = "Ready"
+End With
+
+End Sub
+
+
+
+
+
+
+
+
